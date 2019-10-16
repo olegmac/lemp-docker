@@ -1,0 +1,5 @@
+[mysqld]
+skip-name-resolve
+bind-address=mysql.loc
+port=3306
+symbolic-links=0

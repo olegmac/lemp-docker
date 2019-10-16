@@ -1,0 +1,64 @@
+version: '3.3'
+services:
+  nginx:
+    container_name: nginx.loc
+    image: nginx:1.17-alpine
+    volumes:
+      - ./nginx/config:/etc/nginx:ro
+      - ./nginx/logs:/var/log/nginx
+      - ./app:/usr/share/nginx/html
+    networks:
+      internal:
+        ipv4_address: ${IP_NGINX_CONTAINER}
+    expose:
+      - 80
+      - 443
+    links:
+      - php
+      - mysql
+  php:
+    container_name: php-fpm.loc
+    build: ./php
+    volumes:
+      - ./php/config:/usr/local/etc:ro
+      - ./php/logs:/var/logs
+      - ./app:/usr/share/nginx/html
+    networks:
+      internal:
+        ipv4_address: ${IP_PHP_CONTAINER}
+    ports:
+      - 9000
+    depends_on:
+      - mysql
+    links:
+      - mysql
+    tty: true
+  mysql:
+    container_name: mysql.loc
+    build: ./mysql
+    volumes:
+      - ./mysql/config:/etc/my.cnf.external:ro
+      - ./mysql/logs:/var/log/mysql
+      - db:/var/lib/mysql
+    networks:
+      internal:
+        ipv4_address: ${IP_MYSQL_CONTAINER}
+    ports:
+      - 3306
+    environment:
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DEFAULT_DATABASE=${MYSQL_DEFAULT_DATABASE}
+      - MYSQL_COLLATION=${MYSQL_COLLATION}
+      - MYSQL_CHARSET=${MYSQL_CHARSET}
+    tty: true
+networks:
+  internal:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: ${IP_SUBNET_MASK}
+volumes:
+  db:

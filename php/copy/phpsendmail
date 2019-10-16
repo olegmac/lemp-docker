@@ -1,0 +1,18 @@
+#!/usr/bin/php
+
+<?php
+$logFile = '/var/log/php_sent_email.log';
+$logOutput = date('Y-m-d H:i:s') . PHP_EOL;
+$handle = fopen('php://stdin', 'rb');
+$count = 0;
+while (!feof($handle)) {
+    $count++;
+    $buffer = trim(fgets($handle));
+    if ($count <= 12) {
+        $logOutput .= "{$count} : {$buffer}" . PHP_EOL;
+    } else {
+        $logOutput .= $buffer . PHP_EOL;
+    }
+}
+
+file_put_contents($logFile, $logOutput, FILE_APPEND);

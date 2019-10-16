@@ -1,0 +1,36 @@
+#!/bin/sh
+
+rm /etc/my.cnf \
+&& cp /etc/my.cnf.external/my.cnf /etc \
+&& rm -fr /etc/my.cnf.d \
+&& cp -R /etc/my.cnf.external/my.cnf.d /etc/ \
+&& echo 'Configs copied' \
+&& chown root:root /etc/my.cnf \
+&& chmod 0744 /etc/my.cnf \
+&& chown -R root:root /etc/my.cnf.d \
+&& chmod -R 0744 /etc/my.cnf.d \
+&& chown -R mysql:mysql /var/lib/mysql \
+&& chmod -R 0744 /var/lib/mysql \
+&& echo 'Config owner and permissions set'
+
+/usr/bin/mysqld_safe --datadir='/var/lib/mysql' &
+
+while !(mysqladmin ping)
+do
+   sleep 3
+   echo "waiting for mysql ..."
+done
+
+/usr/bin/mysql_secure_answers ${MYSQL_ROOT_PASSWORD} \
+&& echo 'MySQL security enforced' \
+&& mysql --user=root --password=${MYSQL_ROOT_PASSWORD} -e \
+"CREATE USER '$MYSQL_USER'@'%' IDENTIFIED BY '$MYSQL_PASSWORD';GRANT ALL ON *.* TO '$MYSQL_USER'@'%';" \
+&& echo 'Password set' \
+&& mysql --user=root --password=${MYSQL_ROOT_PASSWORD} -e \
+"SET character_set_server = '$MYSQL_CHARSET';SET collation_server = '$MYSQL_COLLATION';" \
+&& echo 'Collation and charset defined' \
+&& mysql --user=root --password=${MYSQL_ROOT_PASSWORD} -e \
+"CREATE DATABASE $MYSQL_DEFAULT_DATABASE COLLATE='$MYSQL_COLLATION';" \
+&& echo 'Default database created'
+
+while :; do :; done & kill -STOP $! && wait $!

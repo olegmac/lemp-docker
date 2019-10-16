@@ -1,0 +1,12 @@
+[server]
+#### Logs ####
+general_log
+general_log_file = /var/log/mysql/mysql_query.log
+log_error = /var/log/mysql/mysql_error.log
+slow_query_log = 1
+slow_query_log_file = /var/log/mysql/mysql_slow.log
+long_query_time = 2
+log-queries-not-using-indexes
+#### Port ####
+port=3306
+
