@@ -1,12 +1,13 @@
 version: '3.3'
 services:
   nginx:
-    container_name: nginx.loc
+    container_name: ${DC_CONTAINER_PREFIX}nginx.loc
     image: nginx:1.17-alpine
     volumes:
-      - ./nginx/config:/etc/nginx:ro
-      - ./nginx/logs:/var/log/nginx
-      - ./app:/usr/share/nginx/html
+      - ${DC_BASE_DIR}nginx/config:/etc/nginx:ro
+      - ${DC_BASE_DIR}nginx/certs:/etc/certs
+      - ${DC_BASE_DIR}nginx/logs:/var/log/nginx
+      - ${DC_BASE_DIR}app:/usr/share/nginx/html
     networks:
       internal:
         ipv4_address: ${IP_NGINX_CONTAINER}
@@ -17,12 +18,12 @@ services:
       - php
       - mysql
   php:
-    container_name: php-fpm.loc
-    build: ./php
+    container_name: ${DC_CONTAINER_PREFIX}php-fpm.loc
+    build: ${DC_BASE_DIR}php
     volumes:
-      - ./php/config:/usr/local/etc:ro
-      - ./php/logs:/var/logs
-      - ./app:/usr/share/nginx/html
+      - ${DC_BASE_DIR}php/config:/usr/local/etc:ro
+      - ${DC_BASE_DIR}php/logs:/var/log
+      - ${DC_BASE_DIR}app:/usr/share/nginx/html
     networks:
       internal:
         ipv4_address: ${IP_PHP_CONTAINER}
@@ -34,12 +35,12 @@ services:
       - mysql
     tty: true
   mysql:
-    container_name: mysql.loc
-    build: ./mysql
+    container_name: ${DC_CONTAINER_PREFIX}mysql.loc
+    build: ${DC_BASE_DIR}mysql
     volumes:
-      - ./mysql/config:/etc/my.cnf.external:ro
-      - ./mysql/logs:/var/log/mysql
-      - db:/var/lib/mysql
+      - ${DC_BASE_DIR}mysql/config:/etc/my.cnf.external:ro
+      - ${DC_BASE_DIR}mysql/logs:/var/log
+      - mysql:/var/lib/mysql
     networks:
       internal:
         ipv4_address: ${IP_MYSQL_CONTAINER}
@@ -53,6 +54,22 @@ services:
       - MYSQL_COLLATION=${MYSQL_COLLATION}
       - MYSQL_CHARSET=${MYSQL_CHARSET}
     tty: true
+  sphinx:
+    container_name: ${DC_CONTAINER_PREFIX}sphinx.loc
+    build: ${DC_BASE_DIR}sphinx
+    volumes:
+      - ${DC_BASE_DIR}sphinx/config:/etc/sphinx/
+      - sphinx:/var/lib/sphinx/data/
+    networks:
+      internal:
+        ipv4_address: ${IP_SPHINX_CONTAINER}
+    depends_on:
+      - mysql
+    links:
+      - mysql
+  #ToDo: memcached
+  #ToDo: mail server
+  #ToDo: (later, after other fixes) Redis, RabbitMQ etc
 networks:
   internal:
     driver: bridge
@@ -61,4 +78,5 @@ networks:
       config:
         - subnet: ${IP_SUBNET_MASK}
 volumes:
-  db:
+  mysql:
+  sphinx:

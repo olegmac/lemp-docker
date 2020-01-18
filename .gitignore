@@ -2,4 +2,4 @@
 */logs/*
 */docs/*
 /app/*
-*.env
+/nginx/certs/*

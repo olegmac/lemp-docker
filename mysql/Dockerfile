@@ -1,7 +1,7 @@
 FROM alpine:3.10
-
-RUN apk update \
-&& apk upgrade \
+#### Update packages, create user ####
+RUN apk --no-cache update \
+&& apk --no-cache upgrade \
 && addgroup -S mysql \
 && adduser -S mysql -G mysql \
 #### Log directory ####
