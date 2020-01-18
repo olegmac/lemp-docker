@@ -2,4 +2,5 @@
 */logs/*
 */docs/*
 /app/*
+!/app/index.php
 /nginx/certs/*
